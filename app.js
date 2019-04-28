@@ -13,12 +13,9 @@ app.use(cookieParser());
 app.use(session({secret: "Shh, its a secret!"}));
 app.engine('handlebars', exphandlebars({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
-// for parsing application/xwww-
-// app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); 
-//form-urlencoded
 
-// for parsing multipart/form-data
+app.use(bodyParser.urlencoded({ extended: true })); 
+
 app.use(upload.array()); 
 
 var sess;
@@ -69,7 +66,8 @@ userSchema.pre('save', function (next) {
     User.find({userRegisterNumber : self.noInduk}, function (err, docs) {
         if (!docs.length){
             next();
-        }else{                
+        }
+        else{                
             console.log('user exists: ',self.noInduk);
             next(new Error("User exists!"));
         }
@@ -94,7 +92,7 @@ app.post('/login', function (req, res) {
             sess.userRegisterNumber = req.body.noInduk;
             res.cookie('SESSION_MHS', req.body.noInduk, {maxAge: 9000000, httpOnly: true }) //2.5 jam
             console.log('Cookies: ', req.cookies);
-            console.log('login lagiii');
+            console.log('login lagi');
         }
         res.redirect('anggota');
     });
@@ -145,7 +143,7 @@ app.post('/mahasiswa/add', function(req, res){
        res.render('anggota',{
            error : 'Sorry, you provided worng info'
        });
-       console.log('sorry salah cuk');
+       console.log('wrong info!');
     } else {
        var newUser = new User({
           userRegisterNumber: user.noInduk,
@@ -158,7 +156,7 @@ app.post('/mahasiswa/add', function(req, res){
           if(err)
             return res.send('Error user register number exist');
           else{
-            console.log('berhasil');
+            console.log('Berhasil!');
             res.redirect('/')
 
           } 
