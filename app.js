@@ -26,34 +26,57 @@ var mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true)
 mongoose.connect('mongodb://localhost/test', { useNewUrlParser: true });
 
-var personSchema = mongoose.Schema({
-    name: String,
-    age: Number,
-    nationality: String
+var classSchema = new mongoose.Schema({
+    className: String,
+    classCode: String,
+    classDay: String,
+    classStartTime: Date,
+    classEndTime: Date,
+    classLecturer: String,
+    classStudent: [String]
 });
 
-var userSchema = mongoose.Schema({
-    name: String,
-    noInduk: {type: Number, unique: true},
-    password: String,
-    role: String
+var userSchema = new mongoose.Schema({
+    userName: String,
+    userRegisterNumber: {type: Number, unique: true},
+    userPassword: String,
+    userRole: {
+        type: String, 
+        enum: ['Mahasiswa', 'Dosen']
+    },
+    userClass: [classSchema]
+});
 
+var takeClass = new mongoose.Schema({
+    classId: {classSchema},
+    classUser: [userSchema]
+});
+
+var presentCount = new mongoose.Schema({
+    classId: {classSchema},
+    classUser: [userSchema],
+    presentDay: Date,
+    presentStartTime: Date,
+    presentEndTime: Date,
+    presentStatus: {
+        type: Boolean,
+        enum: ['Hadir', 'Tidak Hadir']
+    }
 });
 
 userSchema.pre('save', function (next) {
     var self = this;
-    User.find({name : self.username}, function (err, docs) {
+    User.find({name : self.userName}, function (err, docs) {
         if (!docs.length){
             next();
         }else{                
-            console.log('user exists: ',self.username);
+            console.log('user exists: ',self.userName);
             next(new Error("User exists!"));
         }
     });
 });
-var Person = mongoose.model("Person", personSchema);
-var User = mongoose.model("User", userSchema);
 
+var User = mongoose.model("User", userSchema);
 
 app.get('/', function (req, res) {
     res.render('login');
@@ -105,10 +128,10 @@ app.post('/mahasiswa/add', function(req, res){
        console.log('sorry salah cuk');
     } else {
        var newUser = new User({
-          noInduk: user.noInduk,
-          name: user.name,
-          password: user.password,
-          role: user.role
+          userRegisterNumber: user.noInduk,
+          userName: user.name,
+          userPassword: user.password,
+          userRole: user.role
        });
          
        newUser.save(function(err, User){
@@ -122,31 +145,6 @@ app.post('/mahasiswa/add', function(req, res){
        });
     }
 
-});
-
-app.post('/person', function(req, res){
-    var personInfo = req.body; //Get the parsed information
-
-    console.log(personInfo);
-    if(!personInfo.name || !personInfo.age || !personInfo.nationality){
-       res.render('anggota', personInfo.name, personInfo.age, personInfo.nationality);
-    } else {
-       var newPerson = new Person({
-          name: personInfo.name,
-          age: personInfo.age,
-          nationality: personInfo.nationality
-       });
-         
-       newPerson.save(function(err, Person){
-          if(err)
-            console.log(err);
-          else{
-            console.log('berhasil');
-            res.render('anggota', Person);
-
-          } 
-       });
-    }
 });
 
 app.listen(3000, function (req, res) {
