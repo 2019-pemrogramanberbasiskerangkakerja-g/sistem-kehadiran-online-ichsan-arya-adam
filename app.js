@@ -101,6 +101,23 @@ app.post('/login', function (req, res) {
     
 });
 
+app.get('/logout', function(req, res, next) {
+    if (req.session) {
+        res.clearCookie('SESSION_MHS');
+        console.log(req.cookies);
+        // delete session object
+        req.session.destroy(function(err) {
+            if(err) {
+                return next(err);
+            }
+            else {
+                return res.redirect('/');
+            }
+        });
+    }
+});
+  
+
 app.get('/register', function (req, res) {
     res.render('register');
 });
