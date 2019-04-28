@@ -66,11 +66,11 @@ var presentCount = new mongoose.Schema({
 
 userSchema.pre('save', function (next) {
     var self = this;
-    User.find({name : self.userName}, function (err, docs) {
+    User.find({userRegisterNumber : self.noInduk}, function (err, docs) {
         if (!docs.length){
             next();
         }else{                
-            console.log('user exists: ',self.userName);
+            console.log('user exists: ',self.noInduk);
             next(new Error("User exists!"));
         }
     });
@@ -86,16 +86,19 @@ app.get('/', function (req, res) {
 app.post('/login', function (req, res) {
     var user = req.body;
 
-    User.find({noInduk: user.noInduk}, function(err, response){
+    User.find({userRegisterNumber: user.noInduk}, function(err, response){
         if (err) throw err;
         if (response.length > 0 ){
             console.log('berhasil login');
             sess = req.session;
-            sess.noInduk = req.body.noInduk;
+            sess.userRegisterNumber = req.body.noInduk;
             res.cookie('SESSION_MHS', req.body.noInduk, {maxAge: 9000000, httpOnly: true }) //2.5 jam
+            console.log('Cookies: ', req.cookies);
+            console.log('login lagiii');
         }
+        res.redirect('anggota');
     });
-    res.redirect('anggota');
+    
 });
 
 app.get('/register', function (req, res) {
@@ -104,9 +107,9 @@ app.get('/register', function (req, res) {
 
 app.get('/anggota', function(req, res){
     sess = req.session;
-    if (sess.page_views){
-        sess.page_views++;
-        res.send('Hi ' + sess.name + ' You visited this page ' + sess.page_views + ' times' );
+    if (sess.userRegisterNumber){
+        var userSess = sess;
+        res.render('anggota', userSess );
     } else if (sess.page_views === 1) {
         res.send('Hi ' + sess.name + ' You visited this page for the first times' );
     } else {
@@ -136,7 +139,7 @@ app.post('/mahasiswa/add', function(req, res){
          
        newUser.save(function(err, User){
           if(err)
-            return res.send('Error');
+            return res.send('Error user register number exist');
           else{
             console.log('berhasil');
             res.redirect('/')
