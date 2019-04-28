@@ -6,10 +6,11 @@
     </div>
     <br>
     <!-- Login Form -->
-    <form>
-      <input type="text" id="nrp" class="fadeIn second" name="nrp" placeholder="Nrp">
-      <input type="text" id="name" class="fadeIn third" name="name" placeholder="Name">
-      <input type="password" id="password" class="fadeIn third" name="password" placeholder="password">
+    <form action="/mahasiswa/add" method="POST">
+      <input type="text" class="fadeIn second" name="noInduk" placeholder="Nrp">
+      <input type="text" class="fadeIn third" name="name" placeholder="Name">
+      <input type="password" class="fadeIn third" name="password" placeholder="password">
+      <input type="hidden" name="role" value="mahasiswa">
       <input type="submit" class="fadeIn fourth" value="Register">
     </form>
 
