@@ -84,7 +84,7 @@ app.get('/', function (req, res) {
 app.post('/login', function (req, res) {
     var user = req.body;
 
-    User.find({userRegisterNumber: user.noInduk}, function(err, response){
+    User.find({userRegisterNumber: user.noInduk, userPassword: user.password}, function(err, response){
         if (err) throw err;
         if (response.length > 0 ){
             console.log('berhasil login');
