@@ -23,42 +23,38 @@ var mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true)
 mongoose.connect('mongodb://localhost/test', { useNewUrlParser: true });
 
-var classSchema = new mongoose.Schema({
-    className: String,
-    classCode: String,
-    classDay: String,
-    classStartTime: Date,
-    classEndTime: Date,
-    classLecturer: String,
-    classStudent: [String]
+var mataKuliahSchema = new mongoose.Schema({
+    mataKuliahId: {type: Number, unique: true},
+    mataKuliahName: String,
+    kelas: String
 });
 
 var userSchema = new mongoose.Schema({
     userName: String,
     userRegisterNumber: {type: Number, unique: true},
     userPassword: String,
-    userRole: {
-        type: String, 
-        enum: ['Mahasiswa', 'Dosen']
-    },
-    userClass: [classSchema]
+
 });
 
-var takeClass = new mongoose.Schema({
-    classId: {classSchema},
-    classUser: [userSchema]
+var jadwalKuliahSchema = new mongoose.Schema({
+    mataKuliahId: {mataKuliahSchema},
+    pertemuanKe: Number,
+    ruang: String,
+    jamMasuk: Date,
+    jamSelesai: Date,
+    semester: String
 });
 
-var presentCount = new mongoose.Schema({
-    classId: {classSchema},
-    classUser: [userSchema],
-    presentDay: Date,
-    presentStartTime: Date,
-    presentEndTime: Date,
-    presentStatus: {
-        type: Boolean,
-        enum: ['Hadir', 'Tidak Hadir']
-    }
+var ambilKuliahSchema = new mongoose.Schema({
+    userId: [userSchema],
+    mataKuliahId: {mataKuliahSchema}
+});
+
+var kehadiranSchema = new mongoose.Schema({
+    classId: {mataKuliahSchema},
+    userId: [userSchema],
+    semester: String,
+    pertemuanKe: Number
 });
 
 userSchema.pre('save', function (next) {
