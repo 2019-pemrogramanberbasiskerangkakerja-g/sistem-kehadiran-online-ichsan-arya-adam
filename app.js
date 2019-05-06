@@ -126,7 +126,7 @@ app.get('/anggota', function(req, res){
     }
 });
 
-app.post('/mahasiswa/add', function(req, res){
+app.post('/tambahmahasiswa', function(req, res){
     var user = req.body; //Get the parsed information
 
     if(!user.name || !user.noInduk || !user.password){
