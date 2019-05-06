@@ -102,7 +102,7 @@ app.post('/login', function (req, res) {
 app.get('/logout', function(req, res, next) {
     if (req.session) {
         res.clearCookie('SESSION_MHS');
-        console.log(req.cookies);
+        console.log(" cookie has been destroyed");
         // delete session object
         req.session.destroy(function(err) {
             if(err) {
@@ -125,15 +125,9 @@ app.get('/anggota', function(req, res){
     if (sess.userRegisterNumber){
         var userSess = sess;
         res.render('anggota', userSess );
-    } else if (sess.page_views === 1) {
-        res.send('Hi ' + sess.name + ' You visited this page for the first times' );
     } else {
         res.redirect('/');
     }
-});
-
-app.get('/mahasiswa/register', function(req, res){
-    res.render('register');
 });
 
 app.post('/mahasiswa/add', function(req, res){
