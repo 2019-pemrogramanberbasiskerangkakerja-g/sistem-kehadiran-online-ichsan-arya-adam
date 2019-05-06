@@ -42,6 +42,7 @@ var jadwalKuliahSchema = new mongoose.Schema({
     ruang: String,
     jamMasuk: Date,
     jamSelesai: Date,
+    tahunAjaran: String,
     semester: String
 });
 
@@ -71,7 +72,9 @@ userSchema.pre('save', function (next) {
 });
 
 var User = mongoose.model("User", userSchema);
-var MataKuliah = mongoose.model("MataKuliah", mataKuliahSchema);
+var Jadwal = mongoose.model("Jadwal", jadwalKuliahSchema);
+var MataKuliah = mongoose.model("MataKuliah", mataKuliahSchema); 
+
 app.get('/', function (req, res) {
     res.render('login');
 });
@@ -148,33 +151,57 @@ app.post('/tambahmahasiswa', function(req, res){
           else{
             console.log('Berhasil!');
             res.redirect('/')
-
           } 
        });
     }
-
 });
 
-app.post('/tambahmatkul', function(req, res){ 
-    var matkul = req.body; //Get the parsed information 
- 
-    var newMatkul = new MataKuliah({ 
-        mataKuliahId: matkul.matkulId, 
-        mataKuliahName: matkul.name, 
-        kelas: matkul.kelas 
-        }); 
-          
-    newMatkul.save(function(err, MataKuliah){ 
-        if(err) 
-        return res.send('Error matakuliah id exist'); 
-        else{ 
-            console.log('Berhasil!'); 
-            // res.redirect('/') 
+app.post('/tambahjadwal', function(req, res){
+    var jadwal = req.body;
+    if (!jadwal.idMatkul || !jadwal.pertemuanKe || !jadwal.ruang || !jadwal.jamMasuk || !jadwal.jamSelesai || !jadwal.tahunAjaran || !jadwal.semester) {
+        res.send("Wrong info provided")
+    } else{
+        var newJadwal = new Jadwal({
+            mataKuliahId: Jadwal.idMatkul,
+            pertemuanKe: Jadwal.pertemuanKe,
+            ruang: Jadwal.ruang,
+            jamMasuk: Jadwal.jamMasuk,
+            jamSelesai: Jadwal.jamSelesai,
+            tahunAjaran: Jadwal.tahunAjaran,
+            semester: Jadwal.semester
+        });
+
+        newJadwal.save(function (err, res) {
+            if (err) {
+                return res.send('Error user register number exist');
+            }
+            else {
+                console.log('Berhasil!');
+                res.redirect('/')
+            } 
+        })
+    }
+});
+
+app.post('/tambahmatkul', function (req, res) {
+    var matkul = req.body; //Get the parsed information  
+
+    var newMatkul = new MataKuliah({
+        mataKuliahId: matkul.matkulId,
+        mataKuliahName: matkul.name,
+        kelas: matkul.kelas
+    });
+
+    newMatkul.save(function (err, MataKuliah) {
+        if (err)
+            return res.send('Error matakuliah id exist');
+        else {
+            console.log('Berhasil!');
+            // res.redirect('/')  
             return res.send('berhasil');
-        }  
-    }); 
- 
-}); 
+        }
+    });
+});
 
 app.listen(3000, function (req, res) {
     console.log("App start at port 3000");
