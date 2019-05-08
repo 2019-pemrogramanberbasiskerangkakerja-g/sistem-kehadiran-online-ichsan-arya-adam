@@ -29,6 +29,8 @@ var mataKuliahSchema = new mongoose.Schema({
     kelas: String
 });
 
+var MataKuliah = mongoose.model("MataKuliah", mataKuliahSchema); 
+
 var userSchema = new mongoose.Schema({
     userName: String,
     userRegisterNumber: {type: Number, unique: true},
@@ -37,7 +39,9 @@ var userSchema = new mongoose.Schema({
 });
 
 var jadwalKuliahSchema = new mongoose.Schema({
-    mataKuliahId: {mataKuliahSchema},
+    mataKuliahId: {
+        type: mongoose.Schema.Types.String, ref: 'MataKuliah'
+    },
     pertemuanKe: Number,
     ruang: String,
     jamMasuk: Date,
@@ -73,7 +77,6 @@ userSchema.pre('save', function (next) {
 
 var User = mongoose.model("User", userSchema);
 var Jadwal = mongoose.model("Jadwal", jadwalKuliahSchema);
-var MataKuliah = mongoose.model("MataKuliah", mataKuliahSchema); 
 
 app.get('/', function (req, res) {
     res.render('login');
@@ -161,25 +164,32 @@ app.post('/tambahjadwal', function(req, res){
     if (!jadwal.idMatkul || !jadwal.pertemuanKe || !jadwal.ruang || !jadwal.jamMasuk || !jadwal.jamSelesai || !jadwal.tahunAjaran || !jadwal.semester) {
         res.send("Wrong info provided")
     } else{
-        var newJadwal = new Jadwal({
-            mataKuliahId: Jadwal.idMatkul,
-            pertemuanKe: Jadwal.pertemuanKe,
-            ruang: Jadwal.ruang,
-            jamMasuk: Jadwal.jamMasuk,
-            jamSelesai: Jadwal.jamSelesai,
-            tahunAjaran: Jadwal.tahunAjaran,
-            semester: Jadwal.semester
-        });
+        MataKuliah.findOne({mataKuliahId: jadwal.idMatkul}, function (err, MataKuliah){
+            // console.log(MataKuliah)
+            var newJadwal = new Jadwal({
+                mataKuliahId: MataKuliah.mataKuliahId,
+                pertemuanKe: jadwal.pertemuanKe,
+                ruang: jadwal.ruang,
+                jamMasuk: jadwal.jamMasuk,
+                jamSelesai: jadwal.jamSelesai,
+                tahunAjaran: jadwal.tahunAjaran,
+                semester: jadwal.semester
+            });
 
-        newJadwal.save(function (err, res) {
-            if (err) {
-                return res.send('Error user register number exist');
-            }
-            else {
-                console.log('Berhasil!');
-                res.redirect('/')
-            } 
-        })
+            console.log(newJadwal)
+
+            newJadwal.save(function (err, Jadwal) {
+                if (err) {
+                    console.log(err)
+                    return res.send('Wrong input');
+                }
+                else {
+                    console.log('Berhasil!');
+                    return res.send('Berhasil!')
+                    res.redirect('/')
+                }
+            });
+        });
     }
 });
 
