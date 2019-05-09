@@ -20,7 +20,7 @@ app.use(upload.array());
 
 var sess;
 var mongoose = require('mongoose');
-mongoose.set('useCreateIndex', true)
+mongoose.set('useCreateIndex', true);
 mongoose.connect('mongodb://localhost/test', { useNewUrlParser: true });
 
 var mataKuliahSchema = new mongoose.Schema({
@@ -75,11 +75,17 @@ var ambilKuliahSchema = new mongoose.Schema({
 });
 
 var kehadiranSchema = new mongoose.Schema({
-    classId: {mataKuliahSchema},
-    userId: [userSchema],
+    mataKuliahId: {
+        type: mongoose.Schema.Types.String, ref: 'MataKuliah'
+    },
+    userRegisterNumber: {
+        type: mongoose.Schema.Types.Number, ref: 'User'
+    },
     semester: String,
     pertemuanKe: Number
 });
+
+var Kehadiran = mongoose.model("Kehadiran", kehadiranSchema);
 
 var Jadwal = mongoose.model("Jadwal", jadwalKuliahSchema);
 var AmbilKuliah = mongoose.model("AmbilKuliah", ambilKuliahSchema);
@@ -97,7 +103,7 @@ app.post('/login', function (req, res) {
             console.log('berhasil login');
             sess = req.session;
             sess.userRegisterNumber = req.body.noInduk;
-            res.cookie('SESSION_MHS', req.body.noInduk, {maxAge: 9000000, httpOnly: true }) //2.5 jam
+            res.cookie('SESSION_MHS', req.body.noInduk, {maxAge: 9000000, httpOnly: true }); //2.5 jam
             console.log('Cookies: ', req.cookies);
             console.log('login lagi');
         }
@@ -148,8 +154,7 @@ app.post('/tambahmahasiswa', function(req, res){
        var newUser = new User({
           userRegisterNumber: user.noInduk,
           userName: user.name,
-          userPassword: user.password,
-          userRole: user.role
+          userPassword: user.password
        });
          
        newUser.save(function(err, User){
@@ -157,7 +162,7 @@ app.post('/tambahmahasiswa', function(req, res){
             return res.send('Error user register number exist');
           else{
             console.log('Berhasil!');
-            res.redirect('/')
+            res.redirect('/');
           } 
        });
     }
@@ -166,7 +171,7 @@ app.post('/tambahmahasiswa', function(req, res){
 app.post('/tambahjadwal', function(req, res){
     var jadwal = req.body;
     if (!jadwal.idMatkul || !jadwal.pertemuanKe || !jadwal.ruang || !jadwal.jamMasuk || !jadwal.jamSelesai || !jadwal.tahunAjaran || !jadwal.semester) {
-        res.send("Wrong info provided")
+        res.send("Wrong info provided");
     } else{
         MataKuliah.findOne({mataKuliahId: jadwal.idMatkul}, function (err, MataKuliah){
             // console.log(MataKuliah)
@@ -180,17 +185,16 @@ app.post('/tambahjadwal', function(req, res){
                 semester: jadwal.semester
             });
 
-            console.log(newJadwal)
+            console.log(newJadwal);
 
             newJadwal.save(function (err, Jadwal) {
                 if (err) {
-                    console.log(err)
+                    console.log(err);
                     return res.send('Wrong input');
                 }
                 else {
                     console.log('Berhasil!');
-                    return res.send('Berhasil!')
-                    res.redirect('/')
+                    return res.send('Berhasil!');
                 }
             });
         });
@@ -249,6 +253,38 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function(req, res, next){
 
     });
 
+});
+
+app.post('/absen', function(req, res){
+    var absen = req.body;
+    if (!absen.mataKuliahId || !absen.userRegisterNumber || !absen.semester || !absen.pertemuanKe) {
+        res.send("Wrong info provided");
+    } else{
+        MataKuliah.findOne({mataKuliahId: absen.mataKuliahId}, function (err, MataKuliah){
+            console.log(MataKuliah.mataKuliahId);
+            User.findOne({userRegisterNumber: absen.userRegisterNumber}, function (err, User) {
+                var newAbsen = new Kehadiran({
+                    mataKuliahId: MataKuliah.mataKuliahId,
+                    userRegisterNumber: User.userRegisterNumber,
+                    semester: absen.semester,
+                    pertemuanKe: absen.pertemuanKe
+                });
+    
+                // console.log(newAbsen);
+    
+                newAbsen.save(function (err, Kehadiran) {
+                    if (err) {
+                        console.log(err);
+                        return res.send('Wrong input');
+                    }
+                    else {
+                        console.log('Berhasil!');
+                        return res.send('Berhasil!');
+                    }
+                }); 
+            });
+        });
+    }
 });
 
 app.listen(3000, function (req, res) {
