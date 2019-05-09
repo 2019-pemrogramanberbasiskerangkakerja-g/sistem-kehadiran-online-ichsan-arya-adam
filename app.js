@@ -38,30 +38,6 @@ var userSchema = new mongoose.Schema({
 
 });
 
-var jadwalKuliahSchema = new mongoose.Schema({
-    mataKuliahId: {
-        type: mongoose.Schema.Types.String, ref: 'MataKuliah'
-    },
-    pertemuanKe: Number,
-    ruang: String,
-    jamMasuk: Date,
-    jamSelesai: Date,
-    tahunAjaran: String,
-    semester: String
-});
-
-var ambilKuliahSchema = new mongoose.Schema({
-    userId: [userSchema],
-    mataKuliahId: {mataKuliahSchema}
-});
-
-var kehadiranSchema = new mongoose.Schema({
-    classId: {mataKuliahSchema},
-    userId: [userSchema],
-    semester: String,
-    pertemuanKe: Number
-});
-
 userSchema.pre('save', function (next) {
     var self = this;
     User.find({userRegisterNumber : self.noInduk}, function (err, docs) {
@@ -76,12 +52,41 @@ userSchema.pre('save', function (next) {
 });
 
 var User = mongoose.model("User", userSchema);
+
+var jadwalKuliahSchema = new mongoose.Schema({
+    mataKuliahId: {
+        type: mongoose.Schema.Types.String, ref: 'MataKuliah'
+    },
+    pertemuanKe: Number,
+    ruang: String,
+    jamMasuk: Date,
+    jamSelesai: Date,
+    tahunAjaran: String,
+    semester: String
+});
+
+var ambilKuliahSchema = new mongoose.Schema({
+    userId: [{
+        type: mongoose.Schema.Types.ObjectId, ref: 'User'
+    }],
+    mataKuliahId: [{
+        type: mongoose.Schema.Types.ObjectId, ref: 'MataKuliah'
+    }]
+});
+
+var kehadiranSchema = new mongoose.Schema({
+    classId: {mataKuliahSchema},
+    userId: [userSchema],
+    semester: String,
+    pertemuanKe: Number
+});
+
 var Jadwal = mongoose.model("Jadwal", jadwalKuliahSchema);
+var AmbilKuliah = mongoose.model("AmbilKuliah", ambilKuliahSchema);
 
 app.get('/', function (req, res) {
     res.render('login');
 });
-
 
 app.post('/login', function (req, res) {
     var user = req.body;
@@ -117,7 +122,6 @@ app.get('/logout', function(req, res, next) {
     }
 });
   
-
 app.get('/register', function (req, res) {
     res.render('register');
 });
@@ -211,6 +215,40 @@ app.post('/tambahmatkul', function (req, res) {
             return res.send('berhasil');
         }
     });
+});
+
+app.post('/tambahpeserta/:mataKuliahId/:userId', function(req, res, next){
+    MataKuliah.find({ mataKuliahId: req.params.mataKuliahId}, function (err, mataKuliah){
+        if (err) throw err;
+        if (mataKuliah.length >0 ){
+            User.find({userRegisterNumber: req.params.userId}, function(err, user){
+                if (err) throw err;
+                if (user.length>0){
+                    var newAmbilMatkul = new AmbilKuliah({
+                        userId: user[0]._id,
+                        mataKuliahId: mataKuliah[0]._id
+                    });
+                    console.log("hahaha");
+                    console.log(newAmbilMatkul);
+
+                    newAmbilMatkul.save(function(err){
+                        if(err)
+                            return res.send('Error hahaha');
+                        else{
+                            console.log('Berhasil!');
+                            return res.send('berhasil');
+                            
+                        } 
+
+                    });
+
+                }
+
+            });
+        }
+
+    });
+
 });
 
 app.listen(3000, function (req, res) {
