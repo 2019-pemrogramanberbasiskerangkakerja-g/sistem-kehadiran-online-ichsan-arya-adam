@@ -69,9 +69,9 @@ var ambilKuliahSchema = new mongoose.Schema({
     userId: [{
         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     }],
-    mataKuliahId: [{
+    mataKuliahId: {
         type: mongoose.Schema.Types.ObjectId, ref: 'MataKuliah'
-    }]
+    }
 });
 
 var kehadiranSchema = new mongoose.Schema({
@@ -86,7 +86,6 @@ var kehadiranSchema = new mongoose.Schema({
 });
 
 var Kehadiran = mongoose.model("Kehadiran", kehadiranSchema);
-
 var Jadwal = mongoose.model("Jadwal", jadwalKuliahSchema);
 var AmbilKuliah = mongoose.model("AmbilKuliah", ambilKuliahSchema);
 
@@ -222,27 +221,46 @@ app.post('/tambahmatkul', function (req, res) {
 });
 
 app.post('/tambahpeserta/:mataKuliahId/:userId', function(req, res, next){
-    MataKuliah.find({ mataKuliahId: req.params.mataKuliahId}, function (err, mataKuliah){
-        if (err) throw err;
-        if (mataKuliah.length >0 ){
-            User.find({userRegisterNumber: req.params.userId}, function(err, user){
-                if (err) throw err;
-                if (user.length>0){
-                    var newAmbilMatkul = new AmbilKuliah({
-                        userId: user[0]._id,
-                        mataKuliahId: mataKuliah[0]._id
-                    });
-                    console.log("hahaha");
-                    console.log(newAmbilMatkul);
+    MataKuliah.find({ mataKuliahId: req.params.mataKuliahId}, function (err, mataKuliahFound){
+        if (err) res.send("mata kulia not found!");
+        if (mataKuliahFound.length >0 ){
+            User.find({userRegisterNumber: req.params.userId}, function(err, userFound){
+                if (err) res.send("user not found!");;
+                if (userFound.length>0){
+                    AmbilKuliah.find({mataKuliahId: mataKuliahFound[0]._id}, function (err, ambilMatkulFound){
+                        console.log("hahaha");
+                        // console.log(newAmbilMatkul);
+                        if (err) res.send("mata kuliah belum dibuat");;
+                        //jika udah ada kelasnya
+                        if (ambilMatkulFound.length>0){
+                        
+                            ambilMatkulFound.userId.push({userId: userFound[0]._id});
+                            ambilMatkulFound.save(function(err){
+                                if(err)
+                                    return res.send('Error ambilmatkul');
+                                else{
+                                    console.log('Berhasil!');
+                                    return res.send('berhasillllllllllll');
+                                    
+                                } 
+                            });
 
-                    newAmbilMatkul.save(function(err){
-                        if(err)
-                            return res.send('Error hahaha');
-                        else{
-                            console.log('Berhasil!');
-                            return res.send('berhasil');
-                            
-                        } 
+                        } else{
+                            var newAmbilMatkul = new AmbilKuliah({
+                                userId: userFound[0]._id,
+                                mataKuliahId: mataKuliahFound[0]._id
+                            });
+                            newAmbilMatkul.save(function(err){
+                                if(err)
+                                    return res.send('Error buat matkul baru');
+                                else{
+                                    console.log('Berhasil!');
+                                    return res.send('berhasil');
+                                    
+                                } 
+        
+                            });
+                        }
 
                     });
 
