@@ -104,7 +104,22 @@ var kehadiranSchema = new mongoose.Schema({
         ref: 'User'
     },
     semester: String,
-    pertemuanKe: Number
+    pertemuanKe: Number,
+    status: {
+        type: Boolean, default: true
+    }
+});
+
+kehadiranSchema.pre('save', function (next) {
+    var self = this;    
+    Kehadiran.find({userRegisterNumber: self.userRegisterNumber, pertemuanKe:self.pertemuanKe, semester:self.semester, status:true}, function (err, docs) {        
+        if (!docs.length) {
+            next();
+        }
+        else {
+            next(new Error("User sudah absen!"));
+        }
+    });
 });
 
 var Kehadiran = mongoose.model("Kehadiran", kehadiranSchema);
@@ -211,9 +226,7 @@ app.post('/tambahjadwal', function (req, res) {
                 jamSelesai: jadwal.jamSelesai,
                 tahunAjaran: jadwal.tahunAjaran,
                 semester: jadwal.semester
-            });
-
-            console.log(newJadwal);
+            });         
 
             newJadwal.save(function (err, Jadwal) {
                 if (err) {
@@ -301,39 +314,47 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
     });
 });
 
-app.post('/absen', function (req, res) {
-    var absen = req.body;
-    if (!absen.mataKuliahId || !absen.userRegisterNumber || !absen.semester || !absen.pertemuanKe) {
-        res.send("Wrong info provided");
-    } else {
-        MataKuliah.findOne({
-            mataKuliahId: absen.mataKuliahId
-        }, function (err, MataKuliah) {
-            console.log(MataKuliah.mataKuliahId);
-            User.findOne({
-                userRegisterNumber: absen.userRegisterNumber
-            }, function (err, User) {
-                var newAbsen = new Kehadiran({
-                    mataKuliahId: MataKuliah.mataKuliahId,
-                    userRegisterNumber: User.userRegisterNumber,
-                    semester: absen.semester,
-                    pertemuanKe: absen.pertemuanKe
-                });
+app.post('/absen/:ruang/:nrp', function(req, res){
+    Jadwal.find({ ruang: req.params.ruang }, function(err, jadwal){
+        if (err) {
+            console.log(err);
+            res.send("ruang not found");
+        }
+        if (jadwal.length>0){
+            User.find({ userRegisterNumber: req.params.nrp}, function(err, user){
+                if (err) {
+                    console.log(err);
+                    res.send("user not found");
+                }
+                if (user.length>0){
+                    if (jadwal[0].jamMasuk.getTime() < new Date().getTime() && 
+                            new Date().getTime() < jadwal[0].jamSelesai.getTime()) {
+                        console.log(jadwal[0].jamMasuk.getTime());
+                        console.log(new Date().getTime());
+                        console.log(jadwal[0].jamSelesai.getTime());
 
-                // console.log(newAbsen);
+                        var newAbsen = new Kehadiran({
+                            mataKuliahId: jadwal[0].mataKuliahId,
+                            userRegisterNumber: user[0].userRegisterNumber,
+                            semester: jadwal[0].semester,
+                            pertemuanKe: jadwal[0].pertemuanKe,
+                        });
 
-                newAbsen.save(function (err, Kehadiran) {
-                    if (err) {
-                        console.log(err);
-                        return res.send('Wrong input');
-                    } else {
-                        console.log('Berhasil!');
-                        return res.send('Berhasil!');
+                        newAbsen.save(function (err, Kehadiran) {
+                            if (err) {
+                                console.log(err);
+                                return res.send('Already absen');
+                            }
+                            else {
+                                console.log('Berhasil!');
+                                return res.send('Berhasil!');
+                            }
+                        }); 
                     }
-                });
-            });
-        });
-    }
+                }
+            })
+        }
+    })
 });
 
 app.get('/rekap/:idmatkul/semester/:idsemester', function (req, res) {
