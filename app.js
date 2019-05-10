@@ -6,6 +6,7 @@ var exphandlebars = require('express-handlebars');
 var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var _ = require('underscore');
 
 var app = express();
 
@@ -364,7 +365,13 @@ rekapMatkul.get('/:idmatkul/semester/:idsemester', function (req, res) {
         mataKuliahId: req.params.idmatkul,
         semester: req.params.idsemester
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
-        res.send(rekap);
+        if (_.isEmpty(rekap)) {
+            return res.send("data not exist!");
+        }
+        else {
+            
+            return res.send(rekap);
+        }
     });
 });
 
@@ -373,7 +380,13 @@ rekapMatkul.get('/:idmatkul/pertemuan/:pertemuanke', function (req, res) {
         mataKuliahId: req.params.idmatkul,
         pertemuanKe: req.params.pertemuanke
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
-        res.send(rekap);
+        if (_.isEmpty(rekap)) {
+            return res.send("data not exist!");
+        }
+        else {
+            
+            return res.send(rekap);
+        }
     });
 });
 
@@ -386,7 +399,13 @@ rekapMhs.get('/:nrp/semester/:idsemester', function (req, res) {
         userRegisterNumber: req.params.nrp,
         semester: req.params.idsemester
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
-        res.send(rekap);
+        if (_.isEmpty(rekap)) {
+            return res.send("data not exist!");
+        }
+        else {
+            
+            return res.send(rekap);
+        }
     });
 });
 
@@ -395,7 +414,12 @@ rekapMhs.get('/:nrp/matkul/:idmatkul', function (req, res) {
         userRegisterNumber: req.params.nrp,
         mataKuliahId: req.params.idmatkul
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
-        res.send(rekap);
+        if (_.isEmpty(rekap)) {
+            return res.send("data not exist!");
+        }
+        else {   
+            return res.send(rekap);
+        }
     });
 });
 
