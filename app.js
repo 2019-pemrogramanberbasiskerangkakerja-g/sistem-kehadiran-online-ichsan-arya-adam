@@ -277,7 +277,6 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
                                 else {
                                     console.log('Berhasil!');
                                     return res.send('berhasillllllllllll');
-
                                 }
                             });
 
@@ -292,21 +291,14 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
                                 else {
                                     console.log('Berhasil!');
                                     return res.send('berhasil');
-
                                 }
-
                             });
                         }
-
                     });
-
                 }
-
             });
         }
-
     });
-
 });
 
 app.post('/absen', function (req, res) {
@@ -344,7 +336,7 @@ app.post('/absen', function (req, res) {
     }
 });
 
-app.get('/rekap/:idmatkul/:idsemester', function (req, res) {
+app.get('/rekap/:idmatkul/semester/:idsemester', function (req, res) {
     Kehadiran.find({
         mataKuliahId: req.params.idmatkul,
         semester: req.params.idsemester
@@ -352,6 +344,15 @@ app.get('/rekap/:idmatkul/:idsemester', function (req, res) {
         res.send(rekap);
     });
 });
+
+app.get('/rekap/:idmatkul/pertemuan/:pertemuanke', function (req, res) {
+    Kehadiran.find({
+        mataKuliahId: req.params.idmatkul,
+        pertemuanKe: req.params.pertemuanke
+    }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
+        res.send(rekap);
+    });
+}); 
 
 app.listen(3000, function (req, res) {
     console.log("App start at port 3000");
