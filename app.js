@@ -352,12 +352,14 @@ app.post('/absen/:ruang/:nrp', function(req, res){
                         }); 
                     }
                 }
-            })
+            });
         }
-    })
+    });
 });
 
-app.get('/rekap/:idmatkul/semester/:idsemester', function (req, res) {
+var rekapMatkul = express.Router();
+
+rekapMatkul.get('/:idmatkul/semester/:idsemester', function (req, res) {
     Kehadiran.find({
         mataKuliahId: req.params.idmatkul,
         semester: req.params.idsemester
@@ -366,14 +368,38 @@ app.get('/rekap/:idmatkul/semester/:idsemester', function (req, res) {
     });
 });
 
-app.get('/rekap/:idmatkul/pertemuan/:pertemuanke', function (req, res) {
+rekapMatkul.get('/:idmatkul/pertemuan/:pertemuanke', function (req, res) {
     Kehadiran.find({
         mataKuliahId: req.params.idmatkul,
         pertemuanKe: req.params.pertemuanke
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
         res.send(rekap);
     });
-}); 
+});
+
+app.use('/rekap', rekapMatkul);
+
+var rekapMhs = express.Router();
+
+rekapMhs.get('/:nrp/semester/:idsemester', function (req, res) {
+    Kehadiran.find({
+        userRegisterNumber: req.params.nrp,
+        semester: req.params.idsemester
+    }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
+        res.send(rekap);
+    });
+});
+
+rekapMhs.get('/:nrp/matkul/:idmatkul', function (req, res) {
+    Kehadiran.find({
+        userRegisterNumber: req.params.nrp,
+        mataKuliahId: req.params.idmatkul
+    }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
+        res.send(rekap);
+    });
+});
+
+app.use('/rekapmahasiswa', rekapMhs);
 
 app.listen(3000, function (req, res) {
     console.log("App start at port 3000");
