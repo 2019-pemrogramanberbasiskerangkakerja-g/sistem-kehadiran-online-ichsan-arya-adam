@@ -112,8 +112,9 @@ var kehadiranSchema = new mongoose.Schema({
 });
 
 kehadiranSchema.pre('save', function (next) {
-    var self = this;    
-    Kehadiran.find({userRegisterNumber: self.userRegisterNumber, pertemuanKe:self.pertemuanKe, semester:self.semester, status:true}, function (err, docs) {        
+    var self = this;
+    Kehadiran.find({userRegisterNumber: self.userRegisterNumber, pertemuanKe:self.pertemuanKe, semester:self.semester, 
+        status:true, mataKuliahId: self.mataKuliahId}, function (err, docs) {               
         if (!docs.length) {
             next();
         }
@@ -316,31 +317,27 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
 });
 
 app.post('/absen/:ruang/:nrp', function(req, res){
-    Jadwal.find({ ruang: req.params.ruang }, function(err, jadwal){
+    Jadwal.find({ ruang: req.params.ruang },{} , {sort: {'jamMasuk': -1}, limit: 1 }, function(err, jadwal){
         if (err) {
             console.log(err);
             res.send("ruang not found");
         }
-        if (jadwal.length>0){
+        if (jadwal.length > 0){
             User.find({ userRegisterNumber: req.params.nrp}, function(err, user){
                 if (err) {
                     console.log(err);
                     res.send("user not found");
                 }
                 if (user.length>0){
+                    
                     if (jadwal[0].jamMasuk.getTime() < new Date().getTime() && 
-                            new Date().getTime() < jadwal[0].jamSelesai.getTime()) {
-                        console.log(jadwal[0].jamMasuk.getTime());
-                        console.log(new Date().getTime());
-                        console.log(jadwal[0].jamSelesai.getTime());
-
+                        new Date().getTime() < jadwal[0].jamSelesai.getTime()) {
                         var newAbsen = new Kehadiran({
                             mataKuliahId: jadwal[0].mataKuliahId,
                             userRegisterNumber: user[0].userRegisterNumber,
                             semester: jadwal[0].semester,
                             pertemuanKe: jadwal[0].pertemuanKe,
                         });
-
                         newAbsen.save(function (err, Kehadiran) {
                             if (err) {
                                 console.log(err);
