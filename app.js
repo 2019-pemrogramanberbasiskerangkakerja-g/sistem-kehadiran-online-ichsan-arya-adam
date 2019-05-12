@@ -85,10 +85,10 @@ var jadwalKuliahSchema = new mongoose.Schema({
 });
 
 var ambilKuliahSchema = new mongoose.Schema({
-    userId: [{
+    ambilMatkulUserId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }],
+    },
     mataKuliahId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MataKuliah'
@@ -275,29 +275,18 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
                 if (err) res.send("user not found!");
                 if (userFound.length > 0) {
                     AmbilKuliah.find({
-                        mataKuliahId: mataKuliahFound[0]._id
+                        mataKuliahId: mataKuliahFound[0]._id,
+                        ambilMatkulUserId: userFound[0]._id
                     }, function (err, ambilMatkulFound) {
-                        console.log("hahaha");
-                        // console.log(newAmbilMatkul);
-                        if (err) res.send("mata kuliah belum dibuat");
-                        //jika udah ada kelasnya
-                        if (ambilMatkulFound.length > 0) {
-
-                            ambilMatkulFound.userId.push({
-                                userId: userFound[0]._id
-                            });
-                            ambilMatkulFound.save(function (err) {
-                                if (err)
-                                    return res.send('Error ambilmatkul');
-                                else {
-                                    console.log('Berhasil!');
-                                    return res.send('berhasillllllllllll');
-                                }
-                            });
-
-                        } else {
+                        if (err) res.send('error ambil matkul');
+                        if(ambilMatkulFound.length > 0){
+                            res.send(' ERROR!!! mahasiswa dengan NRP: ' + userFound[0].userRegisterNumber + 
+                            ' telah terdaftar pada mata kuliah ' + mataKuliahFound[0].mataKuliahName + ' kelas ' +
+                            mataKuliahFound[0].kelas
+                            )
+                        } else{
                             var newAmbilMatkul = new AmbilKuliah({
-                                userId: userFound[0]._id,
+                                ambilMatkulUserId: userFound[0]._id,
                                 mataKuliahId: mataKuliahFound[0]._id
                             });
                             newAmbilMatkul.save(function (err) {
@@ -310,9 +299,10 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
                             });
                         }
                     });
-                }
+
+                } else res.send('User Not Found');
             });
-        }
+        } else res.send('Mata Kuliah Not Found');
     });
 });
 
