@@ -193,6 +193,11 @@ app.post('/tambahmahasiswa', function (req, res) {
             error: 'Sorry, you provided worng info'
         });
         console.log('wrong info!');
+        return res.status(400)
+            .json({
+                status: '400',
+                message : 'Wrong info provided'
+            });
     } else {
         var newUser = new User({
             userRegisterNumber: user.noInduk,
@@ -202,10 +207,19 @@ app.post('/tambahmahasiswa', function (req, res) {
 
         newUser.save(function (err, User) {
             if (err)
-                return res.send('Error user register number exist');
+            return res.status(400)
+                .json({
+                    status: '400',
+                    message : 'User register Number exist'
+                });
             else {
                 console.log('Berhasil!');
                 res.redirect('/');
+                return res.status(201)
+                    .json({
+                        status: '201',
+                        message : 'Users Created'
+                    });
             }
         });
     }
@@ -214,7 +228,11 @@ app.post('/tambahmahasiswa', function (req, res) {
 app.post('/tambahjadwal', function (req, res) {
     var jadwal = req.body;
     if (!jadwal.idMatkul || !jadwal.pertemuanKe || !jadwal.ruang || !jadwal.jamMasuk || !jadwal.jamSelesai || !jadwal.tahunAjaran || !jadwal.semester) {
-        res.send("Wrong info provided");
+        return res.status(400)
+            .json({
+                status: '400',
+                message : 'Wrong info provided'
+            });
     } else {
         MataKuliah.findOne({
             mataKuliahId: jadwal.idMatkul
@@ -230,13 +248,21 @@ app.post('/tambahjadwal', function (req, res) {
                 semester: jadwal.semester
             });         
 
-            newJadwal.save(function (err, Jadwal) {
+            newJadwal.save(function (err) {
                 if (err) {
                     console.log(err);
-                    return res.send('Wrong input');
+                    return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Create jadwal failed'
+                    });
                 } else {
                     console.log('Berhasil!');
-                    return res.send('Berhasil!');
+                    return res.status(201)
+                        .json({
+                            status: '201',
+                            message : 'Tambah Jadwal Created'
+                        });
                 }
             });
         });
@@ -245,45 +271,79 @@ app.post('/tambahjadwal', function (req, res) {
 
 app.post('/tambahmatkul', function (req, res) {
     var matkul = req.body; //Get the parsed information  
-
-    var newMatkul = new MataKuliah({
-        mataKuliahId: matkul.matkulId,
-        mataKuliahName: matkul.name,
-        kelas: matkul.kelas
-    });
-
-    newMatkul.save(function (err, MataKuliah) {
-        if (err)
-            return res.send('Error matakuliah id exist');
-        else {
-            console.log('Berhasil!');
-            // res.redirect('/')  
-            return res.send('berhasil');
-        }
-    });
+    if (!matkul.matkulId || !matkul.name || !matkul.kelas ) {
+        return res.status(400)
+            .json({
+                status: '400',
+                message : 'Wrong info provided'
+            });
+    } else {
+        var newMatkul = new MataKuliah({
+            mataKuliahId: matkul.matkulId,
+            mataKuliahName: matkul.name,
+            kelas: matkul.kelas
+        });
+    
+        newMatkul.save(function (err, MataKuliah) {
+            if (err)
+            return res.status(400)
+                .json({
+                    status: '400',
+                    message : 'Error matakuliah id exist'
+                });
+            else {
+                console.log('Berhasil!');
+                // res.redirect('/')  
+                return res.status(201)
+                    .json({
+                        status: '201',
+                        message : 'Mata Kuliah Created'
+                    });
+            }
+        });
+    }
 });
 
 app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
     MataKuliah.find({
         mataKuliahId: req.params.mataKuliahId
     }, function (err, mataKuliahFound) {
-        if (err) res.send("mata kulia not found!");
+        if (err) {
+            return res.status(400)
+                .json({
+                    status: '400',
+                    message : 'Mata Kuliah not found'
+                });
+        }
         if (mataKuliahFound.length > 0) {
             User.find({
                 userRegisterNumber: req.params.userId
             }, function (err, userFound) {
-                if (err) res.send("user not found!");
+                if (err)
+                    return res.status(400)
+                        .json({
+                            status: '400',
+                            message : 'User not found'
+                        });
                 if (userFound.length > 0) {
                     AmbilKuliah.find({
                         mataKuliahId: mataKuliahFound[0]._id,
                         ambilMatkulUserId: userFound[0]._id
                     }, function (err, ambilMatkulFound) {
-                        if (err) res.send('error ambil matkul');
+                        if (err)
+                            return res.status(400)
+                                .json({
+                                    status: '400',
+                                    message : 'Take mata kuliah failed'
+                                });
                         if(ambilMatkulFound.length > 0){
-                            res.send(' ERROR!!! mahasiswa dengan NRP: ' + userFound[0].userRegisterNumber + 
-                            ' telah terdaftar pada mata kuliah ' + mataKuliahFound[0].mataKuliahName + ' kelas ' +
-                            mataKuliahFound[0].kelas
-                            )
+                            return res.status(400)
+                                        .json({
+                                            status: '200',
+                                            message : 'ERROR!!! mahasiswa dengan NRP: ' + userFound[0].userRegisterNumber + 
+                                            ' telah terdaftar pada mata kuliah ' + mataKuliahFound[0].mataKuliahName + ' kelas ' +
+                                            mataKuliahFound[0].kelas
+                                        });
                         } else{
                             var newAmbilMatkul = new AmbilKuliah({
                                 ambilMatkulUserId: userFound[0]._id,
@@ -291,18 +351,34 @@ app.post('/tambahpeserta/:mataKuliahId/:userId', function (req, res, next) {
                             });
                             newAmbilMatkul.save(function (err) {
                                 if (err)
-                                    return res.send('Error buat matkul baru');
+                                return res.status(400)
+                                        .json({
+                                            status: '400',
+                                            message : 'Take mata kuliah failed'
+                                        });
                                 else {
                                     console.log('Berhasil!');
-                                    return res.send('berhasil');
+                                    return res.status(201)
+                                        .json({
+                                            status: '200',
+                                            message : 'OK'
+                                        });
                                 }
                             });
                         }
                     });
 
-                } else res.send('User Not Found');
+                } else return res.status(400)
+                        .json({
+                            status: '400',
+                            message : 'User not found'
+                        });
             });
-        } else res.send('Mata Kuliah Not Found');
+        } else return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Mata Kuliah not found'
+                    });
     });
 });
 
@@ -310,13 +386,21 @@ app.post('/absen/:ruang/:nrp', function(req, res){
     Jadwal.find({ ruang: req.params.ruang },{} , {sort: {'jamMasuk': -1}, limit: 1 }, function(err, jadwal){
         if (err) {
             console.log(err);
-            res.send("ruang not found");
+            return res.status(400)
+                .json({
+                    status: '400',
+                    message : 'Ruang not found'
+                });
         }
         if (jadwal.length > 0){
             User.find({ userRegisterNumber: req.params.nrp}, function(err, user){
                 if (err) {
                     console.log(err);
-                    res.send("user not found");
+                    return res.status(400)
+                        .json({
+                            status: '400',
+                            message : 'User not found'
+                        });
                 }
                 if (user.length>0){
                     
@@ -331,14 +415,26 @@ app.post('/absen/:ruang/:nrp', function(req, res){
                         newAbsen.save(function (err, Kehadiran) {
                             if (err) {
                                 console.log(err);
-                                return res.send('Already absen');
+                                return res.status(400)
+                                    .json({
+                                        status: '400',
+                                        message : 'Already absen'
+                                    });
                             }
                             else {
                                 console.log('Berhasil!');
-                                return res.send('Berhasil!');
+                                return res.status(201)
+                                        .json({
+                                            status: '200',
+                                            message : 'OK'
+                                        });
                             }
                         }); 
-                    }
+                    } else return res.status(400)
+                                .json({
+                                    status: '400',
+                                    message : 'Jadwal not found'
+                                });
                 }
             });
         }
@@ -353,7 +449,11 @@ rekapMatkul.get('/:idmatkul/semester/:idsemester', function (req, res) {
         semester: req.params.idsemester
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
         if (_.isEmpty(rekap)) {
-            return res.send("data not exist!");
+            return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Data not exist!'
+                    });
         }
         else {
             
@@ -368,7 +468,11 @@ rekapMatkul.get('/:idmatkul/pertemuan/:pertemuanke', function (req, res) {
         pertemuanKe: req.params.pertemuanke
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
         if (_.isEmpty(rekap)) {
-            return res.send("data not exist!");
+            return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Data not exist!'
+                    });
         }
         else {
             
@@ -387,7 +491,11 @@ rekapMhs.get('/:nrp/semester/:idsemester', function (req, res) {
         semester: req.params.idsemester
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
         if (_.isEmpty(rekap)) {
-            return res.send("data not exist!");
+            return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Data not exist!'
+                    });
         }
         else {
             
@@ -402,7 +510,11 @@ rekapMhs.get('/:nrp/matkul/:idmatkul', function (req, res) {
         mataKuliahId: req.params.idmatkul
     }).select('mataKuliahId userRegisterNumber semester pertemuanKe -_id').exec(function (err, rekap) {
         if (_.isEmpty(rekap)) {
-            return res.send("data not exist!");
+            return res.status(400)
+                    .json({
+                        status: '400',
+                        message : 'Data not exist!'
+                    });
         }
         else {   
             return res.send(rekap);
