@@ -36,7 +36,7 @@ mongoose.connect('mongodb://localhost/test', {
 
 var mataKuliahSchema = new mongoose.Schema({
     mataKuliahId: {
-        type: Number,
+        type: String,
         unique: true
     },
     mataKuliahName: String,
@@ -214,7 +214,7 @@ app.post('/tambahmahasiswa', function (req, res) {
                 });
             else {
                 console.log('Berhasil!');
-                res.redirect('/');
+                // res.redirect('/');
                 return res.status(201)
                     .json({
                         status: '201',
@@ -436,7 +436,21 @@ app.post('/absen/:ruang/:nrp', function(req, res){
                                     message : 'Jadwal not found'
                                 });
                 }
+                else if (!user.length){
+                    return res.status(400)
+                        .json({
+                            status: '400',
+                            message : 'User not found'
+                        });
+                }
             });
+        }
+        else if(!jadwal.length){
+            return res.status(400)
+                .json({
+                    status: '400',
+                    message : 'Ruang not found'
+                });
         }
     });
 });
