@@ -23,7 +23,7 @@ Library yang digunakan pada tugas ini yakni:
 2. POST `/tambahjadwal` untuk menambah jadwal kelas
 - *Send via body:* **String:** ***idMatkul***, **Number:** ***pertemuanKe***, **String:** ***ruang***, **Date (YYYY-MM-DDThh:mm:ss):** ***jamMasuk***, **Date (YYYY-MM-DDThh:mm:ss):** ***jamSelesai***, **String:** ***tahunAjaran***, **String:** ***semester***
 3. POST `/tambahmatkul` untuk menambah mata kuliah
-- *Send via body: * **String:** ***matkulID***, **String:** ***name***, **String:** ***kelas***
+- *Send via body:* **String:** ***matkulID***, **String:** ***name***, **String:** ***kelas***
 4. POST `/tambahpeserta/:mataKuliahId/:userId` untuk menambah mahasiswa ke matakuliah tertentu
 5. POST `/absen/:ruang/:nrp` untuk melakukan absen
 6. GET `rekap/:idmatkul/semester/:idsemester` untuk melihat rekap kuliah per semester
