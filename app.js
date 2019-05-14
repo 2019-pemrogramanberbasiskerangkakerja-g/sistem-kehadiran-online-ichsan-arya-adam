@@ -81,7 +81,7 @@ var jadwalKuliahSchema = new mongoose.Schema({
     jamMasuk: Date,
     jamSelesai: Date,
     tahunAjaran: String,
-    semester: String
+    semester: Number
 });
 
 var ambilKuliahSchema = new mongoose.Schema({
