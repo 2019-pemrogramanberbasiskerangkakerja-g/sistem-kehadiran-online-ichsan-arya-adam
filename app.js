@@ -48,7 +48,7 @@ var MataKuliah = mongoose.model("MataKuliah", mataKuliahSchema);
 var userSchema = new mongoose.Schema({
     userName: String,
     userRegisterNumber: {
-        type: Number,
+        type: String,
         unique: true
     },
     userPassword: String,
